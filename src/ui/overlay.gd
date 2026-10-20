@@ -1,8 +1,8 @@
 class_name Overlay
 extends Control
-## Pausa y Game Over.
+## Pausa, derrota y victoria.
 
-enum Mode { NONE, PAUSE, GAMEOVER }
+enum Mode { NONE, PAUSE, DEFEAT, VICTORY }
 
 var mode := Mode.NONE
 var _font: Font
@@ -25,24 +25,32 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 func _txt(y: float, s: String, size: int, c: Color) -> void:
-	var x := 320.0 - _font.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * 0.5
+	var x := get_viewport_rect().size.x * 0.5 - _font.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x * 0.5
 	draw_string_outline(_font, Vector2(x, y).round(), s, HORIZONTAL_ALIGNMENT_LEFT, -1, size, 3, Color.BLACK)
 	draw_string(_font, Vector2(x, y).round(), s, HORIZONTAL_ALIGNMENT_LEFT, -1, size, c)
 
 func _draw() -> void:
 	if mode == Mode.NONE:
 		return
-	draw_rect(Rect2(0, 0, 640, 360), Color(0, 0, 0, minf(0.7, _t * 2.0)))
-	var gore_names := ["APAGADO", "NORMAL", "EXTREMO"]
-	if mode == Mode.PAUSE:
-		_txt(110, "PAUSA", 24, Color(1, 0.85, 0.5))
-		_txt(150, "A/D moverse · W/Espacio saltar · S+salto bajar plataforma", 8, Color(0.85, 0.85, 0.9))
-		_txt(164, "Ratón apuntar · Clic disparar · 1-6 / Q E / rueda cambiar arma", 8, Color(0.85, 0.85, 0.9))
-		_txt(190, "[G] Gore: %s" % gore_names[Game.gore], 8, Color(1, 0.4, 0.4))
-		_txt(204, "[F3] Rendimiento   ·   [Esc] Continuar", 8, Color(0.7, 0.7, 0.75))
-		_txt(240, "Combos: Mojado+Eléctrico · Aceite+Fuego · Corte = desmembrar", 8, Color(0.5, 1, 0.8))
-	else:
-		_txt(130, "HAS CAÍDO", 24, Color(0.9, 0.15, 0.2))
-		_txt(165, "Piso %d   ·   %d bajas" % [Game.floor_index + 1, Game.kills], 8, Color(0.9, 0.9, 0.9))
-		if _t > 0.8:
-			_txt(200, "[R] Volver a intentarlo", 8, Color(1, 0.85, 0.5, 0.6 + sin(_t * 5.0) * 0.4))
+	var vs := get_viewport_rect().size
+	draw_rect(Rect2(Vector2.ZERO, vs), Color(0, 0, 0, minf(0.75, _t * 2.0)))
+	var blink := Color(1, 0.85, 0.5, 0.6 + sin(_t * 5.0) * 0.4)
+	match mode:
+		Mode.PAUSE:
+			_txt(220, "PAUSA", 24, Color(1, 0.85, 0.5))
+			_txt(262, "Toca una X para construir una trampa.", 8, Color(0.85, 0.85, 0.9))
+			_txt(276, "Toca una trampa para mejorarla o venderla.", 8, Color(0.85, 0.85, 0.9))
+			_txt(300, "Combos: Aspersor  >  Tesla (cadena x2)", 8, Color(0.5, 1, 0.8))
+			_txt(314, "Aceite  >  Lanzallamas (NAPALM)", 8, Color(0.5, 1, 0.8))
+			_txt(328, "Sierra = desmembrar · Pisón = empujar atrás", 8, Color(0.5, 1, 0.8))
+			_txt(370, "Toca para continuar", 8, blink)
+		Mode.DEFEAT:
+			_txt(240, "LA TORRE CAYÓ", 24, Color(0.9, 0.15, 0.2))
+			_txt(276, "Oleada %d · %d bajas" % [Game.wave, Game.kills], 8, Color(0.9, 0.9, 0.9))
+			if _t > 0.8:
+				_txt(320, "Toca para reintentar", 8, blink)
+		Mode.VICTORY:
+			_txt(240, "¡TORRE DEFENDIDA!", 24, Color(0.5, 1, 0.6))
+			_txt(276, "%d oleadas · %d bajas · %d vidas" % [Game.TOTAL_WAVES, Game.kills, Game.lives], 8, Color(0.9, 0.9, 0.9))
+			if _t > 0.8:
+				_txt(320, "Toca para jugar de nuevo", 8, blink)

@@ -2,19 +2,14 @@ class_name Portal
 extends Node2D
 ## Portal animado. Entrada: escupe enemigos. Salida: se abre al limpiar el piso.
 
-signal entered
-
-var is_exit := false
-var open := false
+var open := true
 var color := Color(1, 0.2, 0.35)
 var _t := 0.0
 var _pulse := 0.0
 var _glow: GlowLayer
 
-func setup(exit_: bool, accent: Color) -> void:
-	is_exit = exit_
-	open = not exit_
-	color = accent if exit_ else Color(1.0, 0.18, 0.3)
+func setup(c: Color) -> void:
+	color = c
 
 func _ready() -> void:
 	_glow = GlowLayer.new(_draw_glow)
@@ -22,13 +17,6 @@ func _ready() -> void:
 
 func pulse() -> void:
 	_pulse = 1.0
-
-func set_open(v: bool) -> void:
-	open = v
-	if v:
-		_pulse = 1.5
-		Game.fx.burst(global_position, 30, color, 140.0)
-		Events.screen_shake.emit(0.3)
 
 func _process(delta: float) -> void:
 	_t += delta
@@ -38,10 +26,6 @@ func _process(delta: float) -> void:
 	if open and Game.fx and Game.rng.randf() < delta * 14.0:
 		var a := Game.rng.randf() * TAU
 		Game.fx.spark_at(global_position + Vector2(cos(a) * 9.0, sin(a) * 15.0), Vector2(cos(a), sin(a)) * -12.0, color, 0.6)
-	if is_exit and open and Game.player and not Game.player.dead:
-		if Game.player.center().distance_to(global_position) < 13.0:
-			open = false
-			entered.emit()
 
 func _draw() -> void:
 	var c := color if open else Color(0.35, 0.35, 0.4)

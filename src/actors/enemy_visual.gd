@@ -29,7 +29,7 @@ func part_rect(part: StringName) -> Rect2:
 
 func _process(delta: float) -> void:
 	squash = move_toward(squash, 0.0, delta * 2.0)
-	var on_floor := enemy.is_on_floor()
+	var on_floor := enemy.on_ground()
 	if on_floor and not _was_floor:
 		squash = 0.2
 	_was_floor = on_floor

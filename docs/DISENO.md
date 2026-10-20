@@ -1,41 +1,57 @@
-# PORTALKILL — Documento de diseño y plan técnico
+# PORTALKILL — Documento de diseño (Tower Defense)
 
-> Plataformas de una pantalla por piso · hordas que salen de un portal · armas elementales que se combinan · gore opcional (+18).
+> Torre vertical de pisos · las hordas bajan en zigzag de portal en portal · tú colocas **trampas elementales** que se combinan · gore opcional (+18) · pensado para **celular**.
 
 ---
 
-## 1. Visión
+## 1. Visión (basada en tu boceto)
 
-Cada **piso** es una arena de una sola pantalla con plataformas. Del **portal de entrada** salen oleadas de enemigos. Al limpiar todas las oleadas se abre el **portal de salida**; al cruzarlo eliges **1 de 3 recompensas** (arma nueva, mejora o *infusión elemental*) y pasas al siguiente piso, más difícil y con otra ambientación.
+```
+  START (portal verde) ───────────────────────►  entran por la derecha
+  Piso 1   ◄──── X ──── X ──── X ────  (los enemigos caminan a la izquierda)
+           portal ▼
+  Piso 2   ──── X ──── X ──── X ────►
+                                    ▼ portal
+  Piso 3   ◄──── X ──── X ──── X ────
+           portal ▼
+  Piso 4   ──── X ──── X ──── X ────►  FINISH (si llegan, pierdes vidas)
+```
 
-El atractivo central: **los elementos interactúan entre sí** y el jugador descubre combos.
+- Los enemigos **solo caminan** siguiendo la ruta en zigzag y bajan de piso por los portales.
+- Cada piso tiene **casillas de construcción** (X). Tocas una casilla, eliges una trampa y la pagas con oro.
+- Ganas **oro** por cada baja y por empezar la oleada antes de tiempo.
+- Si un enemigo llega al FINISH, pierdes vidas. Ganas al sobrevivir todas las oleadas del nivel.
+
+**La gracia son los combos entre trampas de pisos distintos:**
 
 | Combo | Resultado |
 |---|---|
-| Mojado + ⚡ | La electricidad salta a más enemigos y aturde más tiempo |
-| Aceite + 🔥 | Explosión + incendio grande |
-| Mojado + 🔥 | Apaga el fuego (vapor) |
-| 🗡️ Corte | Sangrado + desmembramiento (sin pierna → se arrastra) |
-| 🔥 Ardiendo | Daño continuo, pánico, contagia a enemigos cercanos |
+| Aspersor (moja) → Bobina Tesla | La electricidad salta en cadena y aturde el doble |
+| Derrame de aceite → Lanzallamas | ¡NAPALM!: explosión y gran incendio |
+| Aspersor → Lanzallamas | Anti-combo: el agua apaga el fuego (hay que planificar el orden) |
+| Sierra (corte) | Sangrado y desmembramiento: sin piernas se arrastran (más lentos) |
+| Pisón | Golpe que **empuja hacia atrás** en la ruta (más tiempo bajo tus trampas) |
+
+Referencias: **Dungeon Warfare 2** (trampas en pasillos, gore, pixel art), **Orcs Must Die!** (combos de trampas), **Kingdom Rush** (oleadas y mejoras).
 
 ## 2. Plataforma y tecnología
 
-**Motor: Godot 4.7 (GDScript)**: gratis, sin regalías y excelente en 2D. Exporta a Windows, macOS, Linux, Web, Android e iOS.
+**Motor: Godot 4.7.2 (GDScript)**, renderer `Compatibility` (WebGL2). Funciona en Safari de iPhone, Android y PC.
 
-- **Renderer: `Compatibility` (OpenGL/WebGL2).** Corre en PCs modestas y en navegador, y es el único que exporta a Web. El brillo se simula con sprites aditivos (barato, funciona en todos lados).
-- **GDScript con tipado estático** en todo el código: en Godot 4 el tipado hace el código bastante más rápido y detecta errores antes.
-- ⚠️ Usa la versión **estándar** de Godot (`~/Applications/Godot.app`, 4.7.2), no **Godot_mono**: la versión .NET pide `dotnet`, que no tienes instalado, y además **no exporta a Web**.
+- **Pruebas en tu iPhone:** build Web publicado en **GitHub Pages** (link fijo). En Safari: *Compartir → Agregar a inicio* y se abre a pantalla completa como una app (PWA).
+- **App nativa más adelante:** Godot exporta a iOS (proyecto de Xcode). Para TestFlight o App Store se necesita la cuenta de Apple Developer (USD 99 al año). Para Android basta con generar un APK o publicar en Google Play (USD 25, pago único).
+- Usa la versión **estándar** de Godot (`~/Applications/Godot.app`), no Godot_mono: la versión .NET pide `dotnet`, que no está instalado, y no exporta a Web.
 
-### Distribución (de gratis a pago)
-1. **itch.io** (gratis): build Web jugable en el navegador más descargas para PC. Ideal para prueba pública, feedback y comunidad. Permite marcar contenido +18. Se sube con `butler`, su CLI.
-2. **Steam** (USD 100 por juego, recuperables): Early Access, logros, cuestionario de contenido maduro (violencia y gore se marcan ahí).
-3. Consolas: más adelante, a través de un publisher o porting (requiere clasificación IARC/PEGI/ESRB).
+### Distribución
+1. **GitHub Pages / itch.io** (gratis): pruebas y feedback.
+2. **Google Play** (USD 25) y **App Store** (USD 99 al año). Para la App Store revisa sus reglas sobre violencia gráfica: el interruptor de gore y la clasificación +17 ayudan.
+3. **Steam** (USD 100): versión de PC con mouse.
 
 ## 3. Cómo lograr el look pixel art (recomendaciones)
 
 **Configuración del proyecto (ya aplicada):**
-- Resolución interna **640×360** (16:9). Escala perfecta ×2 = 720p, ×3 = 1080p, ×4 = 1440p.
-- `stretch/mode = viewport` y `scale_mode = integer`: el juego se dibuja a 640×360 y luego se escala en enteros, así los píxeles nunca se deforman.
+- Resolución interna **360×640 vertical** (para celular). El alto crece según la pantalla (`aspect = keep_width`), así aprovecha toda la altura del iPhone.
+- `stretch/mode = viewport`: el juego se dibuja a resolución baja y se escala con filtro *nearest*, así los píxeles se ven nítidos.
 - `default_texture_filter = Nearest`: sin suavizado, píxeles nítidos.
 - `snap_2d_transforms_to_pixel` y `snap_2d_vertices_to_pixel` para evitar el "temblor" de subpíxeles.
 
@@ -54,99 +70,74 @@ El atractivo central: **los elementos interactúan entre sí** y el jugador desc
 
 ```
 src/
-  core/        events.gd (bus de señales) · game.gd (estado de partida, ajustes) · pixel.gd (utilidades de dibujo)
-  data/        weapon_data.gd · enemy_data.gd · catalog.gd (catálogo de armas/enemigos/recompensas)
-  combat/      damage_info.gd · elements.gd (estados + reacciones) · weapons.gd (comportamientos)
-               projectile_system.gd (balas sin nodos)
-  world/       level.gd (grid lógico + colisión fusionada + dibujo) · layouts.gd · portal.gd · wave_director.gd
-  actors/      player.gd · enemy.gd · enemy_visual.gd
-  fx/          blood_system.gd (partículas + manchas persistentes) · gib_system.gd · fx_system.gd
-  ui/          hud.gd · reward_screen.gd · overlay screens
-  main.gd      orquesta pisos, recompensas, game over, modo autotest
+  core/    events.gd (bus) · game.gd (estado: oro, vidas, oleada, ajustes) · pixel.gd · glow_layer.gd
+  data/    trap_data.gd · enemy_data.gd · catalog.gd (trampas y enemigos)
+  combat/  damage_info.gd · elements.gd (estados + reacciones) · projectile_system.gd
+  world/   tower.gd (pisos, ruta en zigzag, casillas, colisión analítica) · portal.gd · wave_director.gd
+  actors/  enemy.gd (seguidor de ruta, sin física) · enemy_visual.gd · trap.gd (comportamientos)
+  fx/      blood_system.gd · gib_system.gd · fx_system.gd
+  ui/      hud.gd (barra superior + panel táctil de construcción) · overlay.gd
+  main.gd
 ```
 
-### Decisiones clave de rendimiento
-| Sistema | Técnica | Por qué |
-|---|---|---|
-| Balas | **Arrays + un único `_draw`**, sin un nodo por bala | Cientos de balas cuestan casi nada |
-| Colisión de partículas/balas con el mundo | **Grid lógico O(1)** (`level.is_solid(pos)`) | Sin raycasts ni física para miles de gotas |
-| Sangre | Partículas en `PackedArray` + **lienzo persistente** (`SubViewport` sin limpiar) | Manchas infinitas sin costo acumulado: cada gota que aterriza se "pinta" una vez y desaparece de la simulación |
-| Gibs (pedazos) | Física propia simplificada sobre el grid, con límite y reciclaje | Sin `RigidBody2D` |
-| Colisión del nivel | Tiles fusionados en rectángulos grandes | Pocos shapes → física barata |
-| Enemigos | `CharacterBody2D` que **no colisionan entre sí** | Hordas densas sin explosión de pares de física |
-| Desacople | Bus de eventos (`Events`) para shake, hitstop, sonido y UI | Los sistemas no se conocen entre sí, así es fácil agregar o quitar |
-| Datos | Armas y enemigos como `Resource` | Balance sin tocar código; listo para editar en el inspector |
+### Decisiones de rendimiento
+| Sistema | Técnica |
+|---|---|
+| Enemigos | **Sin física:** cada uno es una posición 1D sobre la ruta (piso + x). Cientos de enemigos cuestan muy poco |
+| Colisión de sangre, gibs y balas | **Analítica:** el suelo de cada piso es un rectángulo y se revisan 4 pisos, sin grid ni raycasts |
+| Trampas | Buscan objetivos solo entre los enemigos de **su piso** (listas por piso) |
+| Sangre y gibs | Partículas en PackedArrays + lienzo persistente (las manchas no tienen costo acumulado) |
+| Balas y efectos | Arrays + un único `_draw` + capa aditiva para brillos |
+| Datos | Trampas y enemigos como `Resource`: el balance se edita sin tocar código |
 
-Presupuesto objetivo: **60 FPS** con ~80 enemigos, ~2000 gotas de sangre y ~400 balas en una PC modesta. `F3` muestra el overlay de rendimiento.
-
-### Sistema de daño y elementos
-- Todo golpe es un `DamageInfo`: cantidad, **elementos** (bitmask: FIRE, ELECTRIC, CUT, BLUNT, WATER, OIL), dirección, empuje y probabilidad de desmembrar.
-- `Elements.apply_hit(enemy, info)` aplica resistencias y estados, y resuelve **reacciones** con una tabla central. Para agregar un combo nuevo se agrega una regla, sin tocar las armas.
-- Las **infusiones** (recompensa) agregan un elemento a un arma existente: la pistola + fuego dispara balas incendiarias. Así las combinaciones crecen de forma multiplicativa con poco contenido.
-
-### Armas del prototipo
-| Arma | Tipo | Elemento | Rol |
+### Trampas del prototipo
+| Trampa | Elemento | Ubicación | Efecto |
 |---|---|---|---|
-| Pistola | proyectil | contundente | Inicial, confiable |
-| Machete | cuerpo a cuerpo | corte | Desmembra, sangrado |
-| Molotov | lanzable en arco | fuego | Control de zona, incendios |
-| Taser de arco | cadena | eléctrico | Salta entre enemigos, aturde |
-| Hidrocañón | chorro | agua | Moja (combo con eléctrico), apaga |
-| Escopeta | proyectil múltiple | contundente | Gore a corta distancia |
+| Sierra | Corte | suelo | Daño continuo, sangrado, desmembramiento |
+| Lanzallamas | Fuego | suelo | Ráfagas que incendian |
+| Bobina Tesla | Eléctrico | techo | Arco en cadena; mojados: x2 |
+| Aspersor | Agua | techo | Moja y ralentiza; apaga fuego |
+| Derrame de aceite | Aceite | techo | Charcos pegajosos (ralentizan) e inflamables |
+| Torreta | Impacto | pared | Dispara al más cercano del piso |
+| Pisón | Impacto | techo | Aplasta y empuja hacia atrás |
+
+Cada trampa tiene **3 niveles** de mejora (más daño y cadencia, y cambia su aspecto) y se puede **vender** por el 60 % de lo invertido.
 
 ### Enemigos del prototipo
 | Enemigo | Rasgo |
 |---|---|
-| Carroñero | Básico, persigue y salta plataformas |
-| Corredor | Rápido y frágil, aparece en grupos |
-| Bruto | Lento, mucha vida, resiste el corte |
-| Hinchado | Al morir revienta y deja **aceite** (combo con fuego) |
-
-### Director de oleadas
-Cada oleada tiene un **presupuesto de puntos** que crece con el piso y la oleada; cada enemigo tiene un costo. El director "compra" enemigos y los suelta por el portal en ráfagas. Es fácil de balancear y escala sin límite.
+| Carroñero | Básico |
+| Corredor | Rápido y frágil, en grupos |
+| Bruto | Mucha vida, resiste el corte, **quita 3 vidas** |
+| Hinchado | Al morir deja aceite (combo con fuego) |
 
 ## 5. Gore y contenido +18
-- Ajuste **Gore: Apagado / Normal / Extremo** (tecla `G` en pausa).
-  - Apagado: los enemigos se desintegran en píxeles oscuros, sin sangre.
-  - Extremo: más sangre, más gibs, salpicaduras en las paredes.
-- Desmembramiento con efecto en el juego: sin piernas el enemigo se arrastra, y sin cabeza muere.
-- Para tiendas: Steam pide el cuestionario de contenido maduro; itch.io pide marcar "contenido adulto". El interruptor ayuda en mercados restrictivos (Alemania, Australia) y para streamers.
+- Ajuste **Gore: Apagado / Normal / Extremo** (botón en el HUD).
+- El desmembramiento tiene efecto en el juego: sin piernas el enemigo se arrastra más lento, y sin cabeza muere.
+- La sangre y los restos quedan pintados en la torre durante todo el nivel.
 
 ## 6. Hoja de ruta
 
-### Fase 0 — Prototipo mínimo ✅ (esta entrega)
-Un loop completo: pisos → oleadas → portal de salida → recompensa → siguiente piso, con 6 armas, 4 enemigos, reacciones elementales, sangre persistente, gibs, desmembramiento, screen shake, hitstop y HUD.
+### Fase 0 — Prototipo TD ✅ (esta entrega)
+Torre de 4 pisos, 20 casillas, 7 trampas con mejoras y venta, 4 enemigos, 12 oleadas, combos, gore y controles táctiles. Build Web para iPhone.
 
-### Fase 1 — Sentir el juego (game feel)
-- Sonido: pool de efectos con variación de tono; música dinámica por intensidad.
-- Arte real: tileset 16×16, sprites de jugador y enemigos, paleta fija.
-- Pulir el control: dash, wall-jump, recarga.
+### Fase 1 — Sensación y arte
+Sonido y música, sprites reales (tileset de la torre, enemigos, trampas), animaciones de construcción e interfaz pulida.
 
 ### Fase 2 — Profundidad
-- **Fusión de armas**: dos armas en el banco de fusión forman una nueva (motosierra + taser = *sierra de arcos*; lanzallamas + aceite = *napalm*).
-- Más elementos: **hielo** (congelado + contundente = se hace añicos), **ácido** (charcos que derriten la armadura), **veneno**.
-- Enemigos con contrapartida: voladores, escudos, invocadores, enemigos que **absorben** un elemento.
-- **Jefe cada 5 pisos**, que sale del portal de forma especial.
-- **Eventos de piso**: piso inundado (todo mojado → paraíso eléctrico), piso con tuberías de gas, piso oscuro.
+- **Fusión de trampas** adyacentes (Sierra + Tesla = sierra eléctrica; Aceite + Lanzallamas = lanzanapalm).
+- **Habilidades activas** con recarga: tormenta eléctrica, inundar un piso, lluvia de molotovs.
+- Enemigos especiales: con armadura, voladores que se saltan un piso, uno que cura, uno que desactiva trampas, jefes.
+- Torres con distintos números de pisos, portales trampa que reordenan la ruta y pisos con agua o gas.
 
-### Fase 3 — Meta-progresión (roguelite)
-- Moneda que se conserva entre partidas para desbloquear armas en el pool.
-- Personajes con pasivas distintas.
-- Desafíos diarios con semilla compartida.
+### Fase 3 — Meta-progresión
+Mapa de niveles (torres), estrellas por nivel, desbloqueo de trampas y modo infinito con ranking.
 
 ### Fase 4 — Distribución
-- Build Web en itch.io para feedback → página de Steam (lista de deseados) → Early Access.
-- Coop local 2 jugadores (la arquitectura ya admite múltiples `Player`).
-- Steam Deck / gamepad completo (el input ya está mapeado para mando).
+PWA → Google Play / App Store → Steam.
 
-## 7. Controles
-| Acción | Teclado/ratón | Mando |
-|---|---|---|
-| Moverse | A/D | Stick izquierdo |
-| Saltar | W / Espacio | A |
-| Bajar plataforma | S + Saltar | Abajo + A |
-| Apuntar | Ratón | Stick derecho |
-| Disparar | Clic izquierdo | RT |
-| Cambiar arma | 1–6 / Q E / rueda | LB / RB |
-| Pausa / Gore | Esc / G | Start |
-| Overlay rendimiento | F3 | — |
+## 7. Controles (táctil)
+- **Tocar una casilla vacía** abre el panel de trampas; tocar una trampa construye.
+- **Tocar una trampa construida** permite mejorarla o venderla.
+- **Botones:** ▶ iniciar oleada (antes de tiempo da oro extra) · velocidad x1/x2 · gore · pausa.
+- En PC funciona igual con el mouse.

@@ -24,7 +24,7 @@ var gibs: Array[Gib] = []
 func clear() -> void:
 	gibs.clear()
 
-func spawn(pos: Vector2, vel: Vector2, size: Vector2, color: Color, blood: Color, head: bool = false, _src: Node = null) -> void:
+func spawn(pos: Vector2, vel: Vector2, size: Vector2, color: Color, blood: Color, head: bool = false) -> void:
 	if gibs.size() >= MAX_GIBS:
 		_settle(gibs[0])
 		gibs.remove_at(0)

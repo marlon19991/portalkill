@@ -25,7 +25,7 @@ var _painted := false
 
 func _ready() -> void:
 	_canvas = SubViewport.new()
-	_canvas.size = Vector2i(Level.W * Level.TILE, Level.H * Level.TILE)
+	_canvas.size = Vector2i(int(Tower.W), int(Tower.BOTTOM + 8.0))
 	_canvas.transparent_bg = true
 	_canvas.render_target_clear_mode = SubViewport.CLEAR_MODE_NEVER
 	_canvas.render_target_update_mode = SubViewport.UPDATE_ALWAYS
@@ -89,7 +89,7 @@ func stamp(r: Rect2, c: Color) -> void:
 
 func _physics_process(delta: float) -> void:
 	var level := Game.level
-	var bounds := Rect2(-8, -8, Level.W * Level.TILE + 16, Level.H * Level.TILE + 16)
+	var bounds := Rect2(-8, Tower.TOP - 20.0, Tower.W + 16, Tower.BOTTOM - Tower.TOP + 40.0)
 	# compactación in-place: una sola pasada, un solo resize al final
 	var n := _pos.size()
 	var j := 0

@@ -223,7 +223,7 @@ func _tick_zones(delta: float) -> void:
 					break
 			if not ignite:
 				for e in Game.enemies:
-					if e.hit_rect().intersects(band):
+					if e.targetable() and e.hit_rect().intersects(band):
 						if e.burning > 0.0:
 							ignite = true
 							break
@@ -241,7 +241,7 @@ func _tick_zones(delta: float) -> void:
 			if z.tick <= 0.0:
 				z.tick = 0.25
 				for e: Enemy in Game.enemies.duplicate():
-					if e.spawning <= 0.0 and e.hit_rect().intersects(band):
+					if e.targetable() and e.hit_rect().intersects(band):
 						Elements.apply_hit(e, DamageInfo.make(4.0, DamageInfo.FIRE, Vector2.UP, 0.0))
 		i -= 1
 

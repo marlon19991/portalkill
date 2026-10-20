@@ -6,11 +6,9 @@ signal screen_shake(trauma: float)
 signal hitstop(duration: float)
 signal enemy_killed(enemy: Node2D, info: DamageInfo)
 signal enemy_spawned(enemy: Node2D)
-signal player_damaged(amount: float, hp: float)
-signal player_died
-signal weapon_changed(index: int)
-signal inventory_changed
+signal enemy_leaked(enemy: Node2D, lives_lost: int)
+signal gold_changed(gold: int)
 signal wave_started(wave: int, total: int)
-signal floor_cleared
-signal floor_started(floor_index: int)
+signal wave_cleared(wave: int, bonus: int)
+signal game_over(victory: bool)
 signal reaction(name: String, pos: Vector2)

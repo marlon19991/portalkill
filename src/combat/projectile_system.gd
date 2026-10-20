@@ -83,7 +83,7 @@ func _physics_process(delta: float) -> void:
 
 func _hit_enemy(b: Bullet) -> Enemy:
 	for e in Game.enemies:
-		if e.dead or e.spawning > 0.0 or b.hit.has(e):
+		if not e.targetable() or b.hit.has(e):
 			continue
 		if e.hit_rect().grow(1.0 if b.kind == Kind.BULLET else 2.0).has_point(b.pos):
 			return e
@@ -105,7 +105,7 @@ func _impact_enemy(b: Bullet, e: Enemy) -> void:
 			Game.blood.spray(b.pos, info.dir, 5, e.data.blood)
 			# infusión eléctrica: mini-cadena
 			if info.has(DamageInfo.ELECTRIC):
-				Weapons.chain_from(e, 1, info.amount * 0.6, 60.0)
+				Elements.chain_from(e, 1, info.amount * 0.6, 60.0)
 			b.pierce -= 1
 
 func _impact_world(b: Bullet) -> void:
@@ -121,7 +121,7 @@ func _molotov_break(b: Bullet) -> void:
 	Game.fx.sparks(b.pos, 8, Color(0.8, 0.9, 1.0))
 	Game.fx.burst(b.pos, 16, Color(1, 0.6, 0.15), 90.0)
 	Events.screen_shake.emit(0.18)
-	var ground := Game.level.ground_below(b.prev, 120.0)
+	var ground := Game.level.ground_below(b.prev)
 	Game.fx.add_fire_zone(ground, 46.0, 4.5)
 	for e: Enemy in Game.enemies.duplicate():
 		if e.center().distance_to(b.pos) < 26.0:

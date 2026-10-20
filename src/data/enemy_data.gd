@@ -7,13 +7,12 @@ enum DeathEffect { NONE, OIL_BURST }
 @export var id: StringName
 @export var display_name: String
 @export var hp: float = 30.0
-@export var speed: float = 55.0
-@export var accel: float = 600.0
-@export var jump_force: float = 270.0
+@export var speed: float = 22.0 ## px/s a lo largo de la ruta
 @export var size: Vector2 = Vector2(10, 16)
-@export var contact_damage: float = 10.0
 @export var cost: int = 1
-@export var min_floor: int = 0
+@export var min_wave: int = 1
+@export var bounty: int = 5 ## oro por baja
+@export var lives_cost: int = 1 ## vidas que quita si llega al final
 @export var knockback_resist: float = 0.0
 @export var skin: Color = Color(0.55, 0.62, 0.45)
 @export var cloth: Color = Color(0.3, 0.22, 0.25)
